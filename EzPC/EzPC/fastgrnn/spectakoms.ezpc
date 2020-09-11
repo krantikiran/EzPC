@@ -87,14 +87,41 @@ def void MatMulCir(int64_al[100][100] a, int64_al[100][100] b, int64_al[100][100
 }
 def int64_al exp(int64_al x, int64_al scaleIn, int64_al scaleOut)
 {
-    return 0L;
+    input(SERVER,expTableA, int64_al[128]);
+    input(SERVER,expTableB, int64_al[256]);
+    input(SERVER,expTableC, int64_al[256]);
+    input(SERVER,expTableD, int64_al[256]);
+    x = (0L - x);
+    int64_al val1 = (x & (127L));
+    int64_al expVal1 = expTableA[val1];
+    x = (x>>7L);
+    
+    int64_al val2 = (x & (255L));
+    int64_al expVal2 = expTableB[val2];
+    x = (x>>8L);
+
+    int64_al val3 = (x & (255L));
+    int64_al expVal3 = expTableC[val3];
+    x = (x>>8L);
+
+    int64_al val4 = (x & (255L));
+    int64_al expVal4 = expTableD[val4];
+
+    int64_al t1 = expVal1 * expVal2;
+    t1 = t1 >> scaleOut;
+    int64_al t2 = expVal3 * expVal4;
+    t2 = t2 >> scaleOut;
+    int64_al t3 = t1 * t2;
+    t3 = t3 >> scaleOut;
+
+    return t3;
 }
 
 def int64_al sigmoid(int64_al x, int64_al scaleIn, int64_al scaleOut){
     int64_al scaleFactor = scaleOut;
 
     bool_bl isPos = (x>0L)?true:false;
-    int64_al expRes = isPos?exp(0L - x, scaleIn, scaleOut):exp(x, scaleIn, scaleOut);
+    int64_al expRes = isPos?exp(0L - x, 25L, 30L):exp(x, 25L, 30L);
     int64_al denominator = scaleFactor + expRes;
    
     int64_al numerator1 = scaleFactor * scaleFactor;
@@ -122,7 +149,7 @@ def int64_al tanh(int64_al x, int64_al scaleIn, int64_al scaleOut){
     int64_al scaleFactor = scaleOut;
 
     bool_bl isPos = (x>0L)?true:false;
-    int64_al expRes = isPos?exp(0L - (2L * x), scaleIn, scaleOut):exp(2L * x, scaleIn, scaleOut);
+    int64_al expRes = isPos?exp(0L - (2L * x), 25L, 25L):exp(2L * x, 25L, 25L);
     int64_al denominator = scaleFactor + expRes;
    
     int64_al numerator1 = scaleFactor - expRes;
