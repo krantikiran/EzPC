@@ -1,75 +1,302 @@
-def void MatMul(int64_al[100][32] a, int64_al[21][21] b, int64_al[21][21] c, int64_pl i1, int64_pl i2, int64_pl i3)
+def void MatMul(int64_al[100][32] a, int64_al[21][21] b, int64_al[21][21] c, int64_pl i1, int64_pl i2, int64_pl i3, int64_al shrA, int64_al shrB, int64_pl H1, int64_pl H2)
 {
-    int64_al sum = 0L;
+    int64_al[100] tmp;
     for i=[0L:i1]
     {
         for j=[0L:i2]
         {
-            sum = 0L;
             for k=[0L:i3]
             {
                 int64_al prod = (a[i][k] * b[k][j]);
-                sum = sum + prod;
+                int64_al denom = shrA * shrB;
+                prod = prod/denom;
+                tmp[k] = prod;
             };
-            c[i][j] = sum;
+
+            int64_pl count = i3;
+            int64_pl depth = 0;
+            int64_pl hSum = H1 + H2;
+            int64_pl klim = (i3/(2L));
+            klim = klim + 1;
+            bool_bl shr = true;
+
+
+            for l=[0L:hSum]
+            {
+                shr = (depth >= H1)?false:true;
+
+                for p=[0L:klim]
+                {
+                    int64_al sum = 0L;
+
+                    if (p < (count >> 1L))
+                    {
+                        
+                            int64_al sum1 = (tmp[2L * p] / 2L) + tmp[(2L * p) + 1L] / 2L;
+                        
+                            int64_al sum2 = (tmp[2L * p]) + (tmp[(2L * p) + 1L]);
+
+                            sum = shr?sum1:sum2;
+                        
+                    }
+                    else 
+                    {
+                        bool_bl cond = (p == (count >> 1L)) && ((count & 1L) == 1L);
+                        
+                            int64_al sum1 = (tmp[2L * p]) / 2L;
+                            int64_al sum2 = (tmp[2L * p]);
+
+                            sum = cond?sum1:sum2;
+                    };
+                   
+                    tmp[p] = sum;
+                };
+
+                count = (count + 1L) >> 1L;
+                depth = depth + 1L;
+            };
+            c[i][j] = tmp[0];
         };
     };
 }
 
-def void MatAdd(int64_al[100][100] a, int64_al[100][100] b, int64_al[100][100] c, int64_pl i1, int64_pl i2)
+def void MatAdd(int64_al[100][100] a, int64_al[100][100] b, int64_al[100][100] c, int64_pl i1, int64_pl i2, int64_al shrA, int64_al shrB, int64_al shrC)
+{
+    int64_al ind1 = shrA * shrC;
+    int64_al ind2 = shrB * shrC;
+    for i=[0L:i1]
+    {
+        for j=[0L:i2]
+        {
+            c[i][j] = (a[i][j] / ind1) + (b[i][j] / ind2);
+        };
+    };
+}
+def void MatMulCir(int64_al[100][100] a, int64_al[100][100] b, int64_al[100][100] c, int64_pl i1, int64_pl i2, int64_al shrA, int64_al shrB)
+{
+    int64_al denominator = shrA*shrB;
+    int64_al numerator;
+    for i=[0L:i1]
+    {
+        for j=[0L:i2]
+        {
+            numerator = a[i][j] * b[i][j];
+            c[i][j]  = numerator/denominator;
+        }
+    };
+}
+def int64_al exp(int64_al x, int64_al scaleIn, int64_al scaleOut)
+{
+    return 0L;
+}
+
+def int64_al sigmoid(int64_al x, int64_al scaleIn, int64_al scaleOut){
+    int64_al scaleFactor = scaleOut;
+
+    bool_bl isPos = (x>0L)?true:false;
+    int64_al expRes = isPos?exp(0L - x, scaleIn, scaleOut):exp(x, scaleIn, scaleOut);
+    int64_al denominator = scaleFactor + expRes;
+   
+    int64_al numerator1 = scaleFactor * scaleFactor;
+    int64_al numerator2 = scaleFactor * expRes;
+    int64_al numerator = isPos?(numerator1):numerator2;
+
+    int64_al sigmoidRes = numerator/denominator;
+
+    return sigmoidRes;
+}
+
+def void Sigmoid(int64_al[100][100] a, int64_al[100][100] b, int64_pl i1, int64_pl i2, int64_al scaleIn, int64_al scaleOut)
+{
+    
+    for i=[0L:i1]
+    {
+        for j=[0L:i2]
+        {
+            b[i][j] = sigmoid(a[i][j], scaleIn, scaleOut);
+        };
+    };
+}
+
+def int64_al tanh(int64_al x, int64_al scaleIn, int64_al scaleOut){
+    int64_al scaleFactor = scaleOut;
+
+    bool_bl isPos = (x>0L)?true:false;
+    int64_al expRes = isPos?exp(0L - (2L * x), scaleIn, scaleOut):exp(2L * x, scaleIn, scaleOut);
+    int64_al denominator = scaleFactor + expRes;
+   
+    int64_al numerator1 = scaleFactor - expRes;
+    int64_al numerator2 = expRes - scaleFactor;
+    int64_al numerator = isPos?(numerator1):numerator2;
+    numerator = numerator * scaleFactor;
+
+    int64_al tanhRes = numerator/denominator;
+
+    return tanhRes;
+}
+
+def void TanH(int64_al[100][100] a, int64_al[100][100] b, int64_pl i1, int64_pl i2, int64_al scaleIn, int64_al scaleOut)
 {
     for i=[0L:i1]
     {
         for j=[0L:i2]
         {
-            c[i][j] = a[i][j] + b[i][j];
-        }
-    }
+            b[i][j] = tanh(a[i][j], scaleIn, scaleOut);
+        };
+    };
+}
+
+def void MatAddBroadCastB(int64_al[100][100] a, int64_al b, int64_al[100][100] c, int64_pl i1, int64_pl i2, int64_al shrA, int64_al shrB, int64_al shrC)
+{
+    int64_al ind1 = shrA * shrC;
+    int64_al ind2 = shrB * shrC;
+
+    for i=[0L:i1]
+    {
+        for j=[0L:i2]
+        {
+            c[i][j] = (a[i][j]/ind1) + (b/ind2);
+        };
+    };
+}
+
+
+def void MatSubBroadCastA(int64_al a, int64_al[100][100] b, int64_al[100][100] c, int64_pl i1, int64_pl i2)
+{
+    for i=[0L:i1]
+    {
+        for j=[0L:i2]
+        {
+            c[i][j] = a - b[i][j];
+        };
+    };
+}
+
+def void ScalarMul(int64_al a, int64_al[100][100] b, int64_al[100][100] c, int64_pl i1, int64_pl i2, int64_al shrA, int64_al shrB)
+{
+    int64_al denominator = shrA*shrB;
+    int64_al numerator;
+    for i=[0L:i1]
+    {
+        for j=[0L:i2]
+        {
+            numerator = a*b[i][j];
+            c[i][j] = numerator/denominator;
+        };
+    };
+}
+
+def void Argmax(int64_al[100][100] a, int64_al[10] result, int64_pl i1, int64_pl i2)
+{
+    int64_al max = a[0L][0L];
+    int64_al index = 0L;
+    int64_al counter = 0L;
+
+    for i=[0L:i1]
+    {
+        for j=[0L:i2]
+        {
+            index = (a[i][j] > max)?counter:index;
+            max = (a[i][j] > max)?(a[i][j]):max;
+            counter = counter + 1L;
+        };
+    };
+    result[0] = index;
 }
 
 def void main()
 {
-    input(SERVER, W1, int64_bl[30][8]);
-    input(SERVER, W2, int64_bl[8][64]); 
-    input(SERVER, U1, int64_bl[64][8]);
-    input(SERVER, U2, int64_bl[8][64]);
-    input(SERVER, Bg, int64_bl[1][64]);
-    input(SERVER, Bh, int64_bl[1][64]);
-    input(SERVER, FC1, int64_bl[64][20]);
-    input(SERVER, FC2, int64_bl[20][72]);
-    input(SERVER, FCBias, int64_bl[1][72]);
+    input(SERVER, W1, int64_al[30][8]);
+    input(SERVER, W2, int64_al[8][64]); 
+    input(SERVER, U1, int64_al[64][8]);
+    input(SERVER, U2, int64_al[8][64]);
+    input(SERVER, Bg, int64_al[1][64]);
+    input(SERVER, Bh, int64_al[1][64]);
+    input(SERVER, FC1, int64_al[64][20]);
+    input(SERVER, FC2, int64_al[20][72]);
+    input(SERVER, FCBias, int64_al[1][72]);
 
     input(CLIENT, X, int64_al[210][1]);
 
-    int64 zeta = 2623523L;
-    int64 nu = 183599L;
+    (*zeta scale 33*)
+    int64_al zeta = 1343243806L;
+    (*nu scale 37*)
+    int64_al nu = 1504041197L;
 
     int64_al[64][1] H;
     for i=[0:64]
     {
         H[i][0] = 0L;
-    }
+    };
+
     int64_al[1][64] a;
     int64_al[1][64] b;
     int64_al[1][64] c;
+    int64_al[1][64] g;
+    int64_al[1][64] h;
+    int64_al[1][72] score;
     
     int64_al[1][8] tmp1;
     int64_al[1][8] tmp2;
+    int64_al[1][64] tmp3;
+    int64_al[1][64] tmp4;
+    int64_al[1][64] tmp5;
+    int64_al[1][64] tmp6;
+    int64_al[1][64] tmp7;
+    int64_al[1][64] tmp8;
+    int64_al[1][64] tmp9;
+    int64_al[1][20] tmp10;
+    int64_al[1][72] tmp11;
 
+    int64_al scale = 24L;
+    int64_al scaleFactor = 16777216L;
+
+    int64_al one = scaleFactor;
+
+    int64_al[1][30] XX;
+    
     for i=[0:7]
     {
-        int64_al[1][30] XX;
         for j=[0:30]
         {
             XX[0][j] = X[30*i + j][0];
-        }
-        MatMul(XX, W1, tmp1, 1, 8, 30);
-        MatMul(tmp1, W2, a, 1, 64, 8);
+        };
+        MatMul(XX, W1, tmp1, 1L, 8L, 30L, 32768L, 65536L, 1L, 4L);
+        MatMul(tmp1, W2, a, 1L, 64L, 8L, 32768L, 65536L, 0L, 3L);
 
-        MatMul(H, U1, tmp2, 1, 8, 64);
-        MatMul(tmp2, U2, b, 1, 64, 8);
+        MatMul(H, U1, tmp2, 1L, 8L, 64L, 65536L, 32768L, 2L, 4L);
+        MatMul(tmp2, U2, b, 1L, 64L, 8L, 65536L, 32768L, 0L, 3L);
 
-        MatAdd(a, b, c, 1, 64);        
+        MatAdd(a, b, c, 1L, 64L, 1L, 2L, 1L);        
 
-    }
+        MatAdd(c, Bg, tmp3, 1L,  64L, 1L, 8L, 1L);
+        Sigmoid(tmp3, g, 1L, 64L, 33554432L, 1073741824L);
+
+        MatAdd(c,Bh, tmp4, 1L, 64L, 1L, 8L, 1L);
+        TanH(tmp4, h, 1L, 64L, 33554432L, 33554432L);
+
+        MatMulCir(g, H, tmp5, 1L, 64L,  16384L, 65536L);
+
+        MatSubBroadCastA(one, g, tmp6, 1L, 64L);
+
+        ScalarMul(zeta, tmp6, tmp7, 1L, 64L, 32768L, 32768L);
+
+        MatAddBroadCastB(tmp7, nu, tmp8, 1L, 64L, 1L, 16L, 1L);
+
+        MatMulCir(tmp8, h, tmp9, 1L, 64L, 8192L, 4096L);
+
+        MatAdd(tmp9, tmp5, H, 1L, 64L, 1L, 1L, 1L);
+    };
+
+
+    MatMul(H, FC1, tmp10, 1L, 20L, 64L, 65536L, 32768L, 2L, 4L);
+    MatMul(tmp10, FC2, tmp11, 1L, 72L, 64L, 65536L, 32768L, 0L, 5L);
+
+    MatAdd(tmp11, FCBias, score, 1L, 72L, 1L, 8L, 1L);
+    int64_al[1] result;
+    Argmax(score, result, 1L , 72L);
+    int64_al res = result[0];
+
+    output(CLIENT, res);
+
 }
