@@ -1,6 +1,7 @@
 def void MatMul(int64_al[100][32] a, int64_al[21][21] b, int64_al[21][21] c, int64_pl i1, int64_pl i2, int64_pl i3, int64_al shrA, int64_al shrB, int64_pl H1, int64_pl H2)
 {
     int64_al[100] tmp;
+    int64_al denom = shrA * shrB;
     for i=[0L:i1]
     {
         for j=[0L:i2]
@@ -8,20 +9,18 @@ def void MatMul(int64_al[100][32] a, int64_al[21][21] b, int64_al[21][21] c, int
             for k=[0L:i3]
             {
                 int64_al prod = (a[i][k] * b[k][j]);
-                int64_al denom = shrA * shrB;
                 prod = prod/denom;
                 tmp[k] = prod;
             };
 
             int64_pl count = i3;
-            int64_pl depth = 0;
+            int64_pl depth = 0L;
             int64_pl hSum = H1 + H2;
             int64_pl klim = (i3/(2L));
             klim = klim + 1;
-            bool_bl shr = true;
+            bool_pl shr = true;
 
-
-            for l=[0L:hSum]
+            while (depth < hSum)
             {
                 shr = (depth >= H1)?false:true;
 
@@ -31,22 +30,27 @@ def void MatMul(int64_al[100][32] a, int64_al[21][21] b, int64_al[21][21] c, int
 
                     if (p < (count >> 1L))
                     {
-                        
-                            int64_al sum1 = (tmp[2L * p] / 2L) + tmp[(2L * p) + 1L] / 2L;
-                        
-                            int64_al sum2 = (tmp[2L * p]) + (tmp[(2L * p) + 1L]);
-
-                            sum = shr?sum1:sum2;
+                        if (shr)
+                        {
+                            sum = (tmp[2L * p] / 2L) + tmp[(2L * p) + 1L] / 2L;
+                        }
+                        else{
+                            sum = (tmp[2L * p]) + (tmp[(2L * p) + 1L]);
+                        };
                         
                     }
                     else 
                     {
-                        bool_bl cond = (p == (count >> 1L)) && ((count & 1L) == 1L);
-                        
-                            int64_al sum1 = (tmp[2L * p]) / 2L;
-                            int64_al sum2 = (tmp[2L * p]);
+                        bool_pl cond = (p == (count >> 1L)) && ((count & 1L) == 1L);
+                        if (cond)
+                        {
+                            int64_al sum = (tmp[2L * p]) / 2L;
+                        }
+                        else
+                        {
 
-                            sum = cond?sum1:sum2;
+                            sum = (tmp[2L * p]);
+                        }
                     };
                    
                     tmp[p] = sum;
@@ -105,7 +109,7 @@ def int64_al expSigmoidD(int64_al index)
     int64_al res = (index==0L)?(1073741824L):((index==1L)?(836230976L):((index==2L)?(651257344L):((index==3L)?(507199712L):((index==4L)?(395007552L):((index==5L)?(307632192L):((index==6L)?(239584192L):((index==7L)?(186588352L):((index==8L)?(145315152L):((index==9L)?(113171552L):((index==10L)?(88138096L):((index==11L)?(68642016L):((index==12L)?(53458456L):((index==13L)?(41633488L):((index==14L)?(32424194L):((index==15L)?(25251988L):((index==16L)?(19666268L):((index==17L)?(15316105L):((index==18L)?(11928194L):((index==19L)?(9289687L):((index==20L)?(7234815L):((index==21L)?(5634480L):((index==22L)?(4388137L):((index==23L)?(3417484L):((index==24L)?(2661540L):((index==25L)?(2072809L):((index==26L)?(1614305L):((index==27L)?(1257222L):((index==28L)?(979125L):((index==29L)?(762543L):((index==30L)?(593869L):((index==31L)?(462506L):((index==32L)?(360200L):((index==33L)?(280524L):((index==34L)?(218472L):((index==35L)?(170146L):((index==36L)?(132510L):((index==37L)?(103199L):((index==38L)?(80371L):((index==39L)?(62593L):((index==40L)?(48747L):((index==41L)?(37964L):((index==42L)?(29567L):((index==43L)?(23026L):((index==44L)?(17933L):((index==45L)?(13966L):((index==46L)?(10877L):((index==47L)?(8471L):((index==48L)?(6597L):((index==49L)?(5137L):((index==50L)?(4001L):((index==51L)?(3116L):((index==52L)?(2427L):((index==53L)?(1890L):((index==54L)?(1472L):((index==55L)?(1146L):((index==56L)?(892L):((index==57L)?(695L):((index==58L)?(541L):((index==59L)?(421L):((index==60L)?(328L):((index==61L)?(255L):((index==62L)?(199L):((index==63L)?(155L):((index==64L)?(120L):((index==65L)?(94L):((index==66L)?(73L):((index==67L)?(57L):((index==68L)?(44L):((index==69L)?(34L):((index==70L)?(26L):((index==71L)?(20L):((index==72L)?(16L):((index==73L)?(12L):((index==74L)?(9L):((index==75L)?(7L):((index==76L)?(6L):((index==77L)?(4L):((index==78L)?(3L):((index==79L)?(2L):((index==80L)?(2L):((index==81L)?(1L):((index==82L)?(1L):((index==83L)?(1L):((index==84L)?(0L):((index==85L)?(0L):((index==86L)?(0L):((index==87L)?(0L):((index==88L)?(0L):((index==89L)?(0L):((index==90L)?(0L):((index==91L)?(0L):((index==92L)?(0L):((index==93L)?(0L):((index==94L)?(0L):((index==95L)?(0L):((index==96L)?(0L):((index==97L)?(0L):((index==98L)?(0L):((index==99L)?(0L):((index==100L)?(0L):((index==101L)?(0L):((index==102L)?(0L):((index==103L)?(0L):((index==104L)?(0L):((index==105L)?(0L):((index==106L)?(0L):((index==107L)?(0L):((index==108L)?(0L):((index==109L)?(0L):((index==110L)?(0L):((index==111L)?(0L):((index==112L)?(0L):((index==113L)?(0L):((index==114L)?(0L):((index==115L)?(0L):((index==116L)?(0L):((index==117L)?(0L):((index==118L)?(0L):((index==119L)?(0L):((index==120L)?(0L):((index==121L)?(0L):((index==122L)?(0L):((index==123L)?(0L):((index==124L)?(0L):((index==125L)?(0L):((index==126L)?(0L):((index==127L)?(0L):((index==128L)?(0L):((index==129L)?(0L):((index==130L)?(0L):((index==131L)?(0L):((index==132L)?(0L):((index==133L)?(0L):((index==134L)?(0L):((index==135L)?(0L):((index==136L)?(0L):((index==137L)?(0L):((index==138L)?(0L):((index==139L)?(0L):((index==140L)?(0L):((index==141L)?(0L):((index==142L)?(0L):((index==143L)?(0L):((index==144L)?(0L):((index==145L)?(0L):((index==146L)?(0L):((index==147L)?(0L):((index==148L)?(0L):((index==149L)?(0L):((index==150L)?(0L):((index==151L)?(0L):((index==152L)?(0L):((index==153L)?(0L):((index==154L)?(0L):((index==155L)?(0L):((index==156L)?(0L):((index==157L)?(0L):((index==158L)?(0L):((index==159L)?(0L):((index==160L)?(0L):((index==161L)?(0L):((index==162L)?(0L):((index==163L)?(0L):((index==164L)?(0L):((index==165L)?(0L):((index==166L)?(0L):((index==167L)?(0L):((index==168L)?(0L):((index==169L)?(0L):((index==170L)?(0L):((index==171L)?(0L):((index==172L)?(0L):((index==173L)?(0L):((index==174L)?(0L):((index==175L)?(0L):((index==176L)?(0L):((index==177L)?(0L):((index==178L)?(0L):((index==179L)?(0L):((index==180L)?(0L):((index==181L)?(0L):((index==182L)?(0L):((index==183L)?(0L):((index==184L)?(0L):((index==185L)?(0L):((index==186L)?(0L):((index==187L)?(0L):((index==188L)?(0L):((index==189L)?(0L):((index==190L)?(0L):((index==191L)?(0L):((index==192L)?(0L):((index==193L)?(0L):((index==194L)?(0L):((index==195L)?(0L):((index==196L)?(0L):((index==197L)?(0L):((index==198L)?(0L):((index==199L)?(0L):((index==200L)?(0L):((index==201L)?(0L):((index==202L)?(0L):((index==203L)?(0L):((index==204L)?(0L):((index==205L)?(0L):((index==206L)?(0L):((index==207L)?(0L):((index==208L)?(0L):((index==209L)?(0L):((index==210L)?(0L):((index==211L)?(0L):((index==212L)?(0L):((index==213L)?(0L):((index==214L)?(0L):((index==215L)?(0L):((index==216L)?(0L):((index==217L)?(0L):((index==218L)?(0L):((index==219L)?(0L):((index==220L)?(0L):((index==221L)?(0L):((index==222L)?(0L):((index==223L)?(0L):((index==224L)?(0L):((index==225L)?(0L):((index==226L)?(0L):((index==227L)?(0L):((index==228L)?(0L):((index==229L)?(0L):((index==230L)?(0L):((index==231L)?(0L):((index==232L)?(0L):((index==233L)?(0L):((index==234L)?(0L):((index==235L)?(0L):((index==236L)?(0L):((index==237L)?(0L):((index==238L)?(0L):((index==239L)?(0L):((index==240L)?(0L):((index==241L)?(0L):((index==242L)?(0L):((index==243L)?(0L):((index==244L)?(0L):((index==245L)?(0L):((index==246L)?(0L):((index==247L)?(0L):((index==248L)?(0L):((index==249L)?(0L):((index==250L)?(0L):((index==251L)?(0L):((index==252L)?(0L):((index==253L)?(0L):((index==254L)?(0L):((index==255L)?(0L):(0L))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));
     return res;
 }
-def int64_al expSigmoid(int64_al x, int64_al scaleIn, int64_al scaleOut)
+def int64_al expSigmoid(int64_al x, int64_pl scaleIn, int64_pl scaleOut)
 {
     x = (x == (-2147483648L))?(2147483647L):(0L - x);
     int64_al val1 = (x & (127L));
@@ -133,7 +137,7 @@ def int64_al expSigmoid(int64_al x, int64_al scaleIn, int64_al scaleOut)
     return t3;
 }
 
-def int64_al sigmoid(int64_al x, int64_al scaleIn, int64_al scaleOut){
+def int64_al sigmoid(int64_al x, int64_pl scaleIn, int64_pl scaleOut){
     int64_al scaleFactor = scaleOut;
 
     bool_bl isPos = (x>0L)?true:false;
@@ -149,7 +153,7 @@ def int64_al sigmoid(int64_al x, int64_al scaleIn, int64_al scaleOut){
     return sigmoidRes;
 }
 
-def void Sigmoid(int64_al[100][100] a, int64_al[100][100] b, int64_pl i1, int64_pl i2, int64_al scaleIn, int64_al scaleOut)
+def void Sigmoid(int64_al[100][100] a, int64_al[100][100] b, int64_pl i1, int64_pl i2, int64_pl scaleIn, int64_pl scaleOut)
 {
     
     for i=[0L:i1]
@@ -182,7 +186,7 @@ def int64_al expTanhD(int64_al index)
     return res;
 }
 
-def int64_al expTanh(int64_al x, int64_al scaleIn, int64_al scaleOut)
+def int64_al expTanh(int64_al x, int64_pl scaleIn, int64_pl scaleOut)
 {
     x = (x == (-2147483648L))?(2147483647L):(0L - x);
     int64_al val1 = (x & (127L));
@@ -211,7 +215,7 @@ def int64_al expTanh(int64_al x, int64_al scaleIn, int64_al scaleOut)
 }
 
 
-def int64_al tanh(int64_al x, int64_al scaleIn, int64_al scaleOut){
+def int64_al tanh(int64_al x, int64_pl scaleIn, int64_pl scaleOut){
     int64_al scaleFactor = scaleOut;
 
     bool_bl isPos = (x>0L)?true:false;
@@ -228,7 +232,7 @@ def int64_al tanh(int64_al x, int64_al scaleIn, int64_al scaleOut){
     return tanhRes;
 }
 
-def void TanH(int64_al[100][100] a, int64_al[100][100] b, int64_pl i1, int64_pl i2, int64_al scaleIn, int64_al scaleOut)
+def void TanH(int64_al[100][100] a, int64_al[100][100] b, int64_pl i1, int64_pl i2, int64_pl scaleIn, int64_pl scaleOut)
 {
     for i=[0L:i1]
     {
